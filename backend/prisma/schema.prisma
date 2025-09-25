@@ -1,0 +1,46 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Product {
+  id        String   @id @default(cuid())
+  name      String
+  sku       String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  inventory InventoryLevel?
+  sales     Sale[]
+}
+
+model InventoryLevel {
+  id         String   @id @default(cuid())
+  productId  String   @unique
+  quantity   Int      @default(0)
+  threshold  Int      @default(5)
+  updatedAt  DateTime @updatedAt
+
+  product    Product  @relation(fields: [productId], references: [id])
+}
+
+model Sale {
+  id        String   @id @default(cuid())
+  productId String
+  units     Int
+  soldAt    DateTime @default(now())
+
+  product   Product  @relation(fields: [productId], references: [id])
+}
+
+model Alert {
+  id        String   @id @default(cuid())
+  productId String
+  kind      String   // e.g. "LOW_STOCK"
+  message   String
+  createdAt DateTime @default(now())
+}
