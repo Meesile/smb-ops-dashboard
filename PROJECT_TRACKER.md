@@ -41,7 +41,7 @@ Use this as the living project dashboard. Check items off as you complete them. 
 - [ ] Date range + filters
 
 ### Phase 4 — Alerts & Jobs
-- [ ] Threshold alerts: low inventory per product
+- [x] Threshold alerts: low inventory per product (API + UI list)
 - [ ] Scheduling: nightly cron job
 - [ ] Delivery: email (P0), SMS (P1)
 - [ ] Alert config UI
@@ -79,13 +79,14 @@ Use this as the living project dashboard. Check items off as you complete them. 
 
 ### Backend
 - [x] Express + TypeScript scaffold
-- [x] Routes: `GET /api/products`, `POST /api/products` (in-memory)
+- [x] Routes: 'GET/POST/PATCH/DELETE /api/products` (Prisma-backed)
 - [ ] Prisma models & migrations
 - [ ] CSV parsing pipeline
 - [ ] Background jobs (alerts)
 - [ ] Email service
 
 ### Data & Schema
+- [x] Initial Prisma schema (Product)
 - [ ] Prisma schema (`products`, `inventory_levels`, `sales`, `alerts`)
 - [ ] Indices for time-series
 - [ ] Materialized views for KPIs
@@ -107,6 +108,6 @@ Use this as the living project dashboard. Check items off as you complete them. 
 - [x] Frontend + backend both run locally and talk to each other
 - [x] Create & list products end-to-end (UI → API)
 - [x] Persist products to a real DB (Prisma + SQLite/Postgres)
-- [ ] First alert triggered (when quantity < threshold)
+- [x] First alert triggered (when quantity < threshold)
 - [ ] MVP dashboard charts
 - [ ] First beta user onboarded
