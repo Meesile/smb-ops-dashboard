@@ -3,6 +3,7 @@ import ReactDOM from "react-dom/client";
 import BackendStatus from "./BackendStatus";
 import Products from "./Products";
 import AddProductForm from "./AddProductForm";
+import Alerts from "./Alerts";
 
 function App() {
   const [, setTick] = useState(0);
@@ -14,6 +15,7 @@ function App() {
       <BackendStatus />
       <AddProductForm onCreated={refresh} />
       <Products key={"p-" + Date.now()} />
+      <Alerts />
     </div>
   );
 }

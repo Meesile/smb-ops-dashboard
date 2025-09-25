@@ -106,7 +106,7 @@ Use this as the living project dashboard. Check items off as you complete them. 
 ## 🎯 Milestones
 - [x] Frontend + backend both run locally and talk to each other
 - [x] Create & list products end-to-end (UI → API)
-- [ ] Persist products to a real DB (Prisma + SQLite/Postgres)
+- [x] Persist products to a real DB (Prisma + SQLite/Postgres)
 - [ ] First alert triggered (when quantity < threshold)
 - [ ] MVP dashboard charts
 - [ ] First beta user onboarded
