@@ -79,7 +79,7 @@ Use this as the living project dashboard. Check items off as you complete them. 
 
 ### Backend
 - [x] Express + TypeScript scaffold
-- [x] Routes: 'GET/POST/PATCH/DELETE /api/products` (Prisma-backed)
+- [x] Routes: `GET/POST/PATCH/DELETE /api/products` (Prisma-backed)
 - [ ] Prisma models & migrations
 - [ ] CSV parsing pipeline
 - [ ] Background jobs (alerts)
