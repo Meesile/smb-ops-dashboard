@@ -7,10 +7,5 @@ A lightweight dashboard for small businesses to track sales, inventory, and staf
 - Backend: Node.js + Express + Prisma (Postgres)
 - Infra: Docker, GitHub Actions, Vercel (frontend), Railway/Render (backend)
 
-## Setup
-
-### Frontend
-```bash
-cd frontend
-npm install
-npm run dev
+## Project Tracker
+See [PROJECT_TRACKER.md](./PROJECT_TRACKER.md) for the detailed roadmap, backlog, and milestones.
