@@ -3,7 +3,7 @@ import { prisma } from "../lib/prisma";
 
 const router = Router();
 
-// GET /api/products  → list all products from DB
+// GET /api/products → list all products from DB
 router.get("/", async (_req, res) => {
   try {
     const products = await prisma.product.findMany({
@@ -16,7 +16,7 @@ router.get("/", async (_req, res) => {
   }
 });
 
-// POST /api/products  → create product in DB
+// POST /api/products → create product in DB
 router.post("/", async (req, res) => {
   try {
     const { name, sku, quantity = 0, threshold = 0 } = req.body || {};
@@ -42,7 +42,6 @@ router.post("/", async (req, res) => {
 
     res.status(201).json(product);
   } catch (err: any) {
-    // handle unique constraint from DB
     if (err?.code === "P2002") {
       return res.status(409).json({ error: "A product with this SKU already exists" });
     }

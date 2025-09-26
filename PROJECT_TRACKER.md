@@ -39,6 +39,8 @@ Use this as the living project dashboard. Check items off as you complete them. 
 - [ ] Charts: time series sales, top products, weekday vs weekend
 - [ ] Drill-downs: product → daily trend
 - [ ] Date range + filters
+- [x] KPI cards: inventory (total products, low-stock, total quantity)
+- [x] Chart: top products (by quantity)
 
 ### Phase 4 — Alerts & Jobs
 - [x] Threshold alerts: low inventory per product (API + UI list)
@@ -73,6 +75,7 @@ Use this as the living project dashboard. Check items off as you complete them. 
 ### Frontend
 - [x] Vite + React + TS bootstrapped
 - [x] Products list + Add Product form
+- [x] Inline edit & delete (auto-refresh)
 - [ ] Reusable chart components
 - [ ] Form validation (Zod/RHF)
 - [ ] Toasts & error boundaries
@@ -81,6 +84,8 @@ Use this as the living project dashboard. Check items off as you complete them. 
 - [x] Express + TypeScript scaffold
 - [x] Routes: `GET/POST/PATCH/DELETE /api/products` (Prisma-backed)
 - [ ] Prisma models & migrations
+- [x] Routes: GET/POST/PATCH/DELETE /api/products (Prisma-backed)
+- [x] Prisma models & migrations (initial Product)
 - [ ] CSV parsing pipeline
 - [ ] Background jobs (alerts)
 - [ ] Email service
@@ -109,5 +114,5 @@ Use this as the living project dashboard. Check items off as you complete them. 
 - [x] Create & list products end-to-end (UI → API)
 - [x] Persist products to a real DB (Prisma + SQLite/Postgres)
 - [x] First alert triggered (when quantity < threshold)
-- [ ] MVP dashboard charts
+- [x] MVP dashboard charts (KPIs + bar chart)
 - [ ] First beta user onboarded

@@ -3,7 +3,7 @@ import { prisma } from "../lib/prisma";
 
 const router = Router();
 
-// GET /api/alerts/low-stock  → products where quantity < threshold
+// GET /api/alerts/low-stock → products where quantity < threshold
 router.get("/low-stock", async (_req, res) => {
   try {
     const products = await prisma.product.findMany();

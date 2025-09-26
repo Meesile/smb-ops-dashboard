@@ -3,6 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import productsRouter from "./routes/products";
 import alertsRouter from "./routes/alerts";
+import importsRouter from "./routes/imports";
 
 dotenv.config();
 
@@ -22,6 +23,7 @@ app.get("/api/status", (_req: Request, res: Response) => {
 
 app.use("/api/products", productsRouter);
 app.use("/api/alerts", alertsRouter);
+app.use("/api/imports", importsRouter);
 
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);

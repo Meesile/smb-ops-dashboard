@@ -2,7 +2,6 @@ import { PrismaClient } from "@prisma/client";
 
 const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
 
-// Reuse a single Prisma instance in dev to avoid too many connections
 export const prisma =
   globalForPrisma.prisma ??
   new PrismaClient({
