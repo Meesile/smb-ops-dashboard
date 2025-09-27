@@ -40,6 +40,7 @@ export default function Products() {
   const fileRef = useRef<HTMLInputElement | null>(null);
   const [uploading, setUploading] = useState<boolean>(false);
   const [uploadMsg, setUploadMsg] = useState<string>("");
+  const [normalizing, setNormalizing] = useState<boolean>(false);
 
   const fetchProducts = async () => {
     try {
@@ -195,10 +196,16 @@ export default function Products() {
       setUploadMsg("Please choose a .csv file first");
       return;
     }
+    if (file.size === 0) {
+      setUploadMsg("❌ Selected file is empty (0 bytes)");
+      return;
+    }
     try {
       setUploading(true);
       const fd = new FormData();
-      fd.append("file", file);
+      fd.append("file", file, file.name);
+  
+      // 1) Upload to staging
       const res = await fetch("http://localhost:4000/api/imports/csv", {
         method: "POST",
         body: fd,
@@ -206,21 +213,37 @@ export default function Products() {
       const data = await res.json();
       if (!res.ok) {
         setUploadMsg(`❌ ${data?.error || "Upload failed"}`);
-      } else {
-        const r = data?.result;
-        if (r) {
-          setUploadMsg(`✅ Import complete — created: ${r.created}, updated: ${r.updated}, invalid: ${r.invalid}`);
-        } else {
-          setUploadMsg("✅ Upload complete");
-        }
-        await fetchProducts();
-        // clear file selection
-        if (fileRef.current) fileRef.current.value = "";
+        return;
       }
+  
+      // 2) Normalize automatically if jobId is returned
+      if (data?.jobId) {
+        setUploadMsg("Uploading complete — normalizing…");
+        setNormalizing(true);
+        const res2 = await fetch(
+          `http://localhost:4000/api/imports/normalize/${encodeURIComponent(data.jobId)}`,
+          { method: "POST" }
+        );
+        const norm = await res2.json();
+        if (!res2.ok) {
+          setUploadMsg(`❌ Normalize failed: ${norm?.error || "Unknown error"}`);
+        } else {
+          setUploadMsg(
+            `✅ Import complete — created: ${norm.created}, updated: ${norm.updated}, snapshots: ${norm.snapshots}`
+          );
+        }
+      } else {
+        setUploadMsg("✅ Upload complete (no job id)");
+      }
+  
+      // 3) Refresh products and clear file input
+      await fetchProducts();
+      if (fileRef.current) fileRef.current.value = "";
     } catch (e: any) {
       setUploadMsg(`❌ ${e?.message || "Network error"}`);
     } finally {
       setUploading(false);
+      setNormalizing(false);
     }
   };
 
@@ -294,10 +317,10 @@ export default function Products() {
           />
           <button
             onClick={() => fileRef.current?.click()}
-            disabled={uploading}
+            disabled={uploading || normalizing}
             title="Import products from CSV"
           >
-            Import CSV
+            {normalizing ? "Normalizing…" : uploading ? "Uploading…" : "Import CSV"}
           </button>
         </div>
       </div>

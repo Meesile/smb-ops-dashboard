@@ -27,9 +27,8 @@ Use this as the living project dashboard. Check items off as you complete them. 
 - [x] Basic UI shell: Navbar, pages, protected routes (MVP shell running)
 - [ ] Teams/orgs: single org per account (seed data)
 
-### Phase 2 — Data Ingestion & Modeling
-- [ ] CSV upload (sales, inventory) → validation → staging tables
-- [ ] ETL job: normalize to core schemas
+- [x] CSV upload (sales, inventory) → validation → staging tables
+- [x] ETL job: normalize to core schemas
 - [ ] Google Sheets connector (read-only)
 - [ ] Error handling for imports
 - [ ] Audit log of data imports
@@ -80,13 +79,12 @@ Use this as the living project dashboard. Check items off as you complete them. 
 - [ ] Form validation (Zod/RHF)
 - [ ] Toasts & error boundaries
 
-### Backend
 - [x] Express + TypeScript scaffold
 - [x] Routes: `GET/POST/PATCH/DELETE /api/products` (Prisma-backed)
 - [ ] Prisma models & migrations
 - [x] Routes: GET/POST/PATCH/DELETE /api/products (Prisma-backed)
 - [x] Prisma models & migrations (initial Product)
-- [ ] CSV parsing pipeline
+- [x] CSV parsing pipeline
 - [ ] Background jobs (alerts)
 - [ ] Email service
 
@@ -115,4 +113,5 @@ Use this as the living project dashboard. Check items off as you complete them. 
 - [x] Persist products to a real DB (Prisma + SQLite/Postgres)
 - [x] First alert triggered (when quantity < threshold)
 - [x] MVP dashboard charts (KPIs + bar chart)
+- [x] CSV import + normalize flow (UI → API → DB)
 - [ ] First beta user onboarded

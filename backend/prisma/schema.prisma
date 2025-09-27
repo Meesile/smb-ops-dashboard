@@ -15,4 +15,90 @@ model Product {
   threshold Int
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  inventoryLevels InventoryLevel[]
+  sales           Sale[]
+}
+
+/// ---------- STAGING & CORE NORMALIZATION TABLES ----------
+
+// Import job status for CSV uploads
+enum ImportStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+// Per-row status inside a staging job
+enum RowStatus {
+  RAW // landed but not parsed yet
+  VALID // parsed & ready to normalize
+  INVALID // failed validation (see error)
+  PROCESSED // normalized into core tables
+}
+
+// Tracks one CSV upload/import session
+model StagingImportJob {
+  id          String       @id @default(cuid())
+  source      String // e.g. "csv"
+  filename    String
+  status      ImportStatus @default(PENDING)
+  createdAt   DateTime     @default(now())
+  completedAt DateTime?
+
+  // Counters (optional – can be updated as we process)
+  totalRows     Int @default(0)
+  validRows     Int @default(0)
+  invalidRows   Int @default(0)
+  processedRows Int @default(0)
+
+  rows StagingRow[]
+}
+
+// Raw rows from CSV – keep original text + parsed columns for auditability
+model StagingRow {
+  id    String           @id @default(cuid())
+  jobId String
+  job   StagingImportJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  // Original raw CSV line (optional for large files)
+  rawText String?
+
+  // Parsed columns (inventory import v1)
+  sku       String?
+  name      String?
+  quantity  Int?
+  threshold Int?
+
+  status      RowStatus @default(RAW)
+  error       String?
+  createdAt   DateTime  @default(now())
+  processedAt DateTime?
+
+  @@index([jobId])
+  @@index([status])
+  @@index([sku])
+}
+
+// Core table: time-stamped inventory snapshots
+model InventoryLevel {
+  id        String   @id @default(cuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  asOf      DateTime @default(now())
+  quantity  Int
+
+  @@index([productId, asOf])
+}
+
+// Core table: basic sales facts (minimal v1 – can evolve)
+model Sale {
+  id        String   @id @default(cuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  soldAt    DateTime @default(now())
+  units     Int
+
+  @@index([productId, soldAt])
 }
