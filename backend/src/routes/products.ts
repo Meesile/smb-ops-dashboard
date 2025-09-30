@@ -3,13 +3,41 @@ import { prisma } from "../lib/prisma";
 
 const router = Router();
 
-// GET /api/products → list all products from DB
+// GET /api/products → list all products from DB with sales data
 router.get("/", async (_req, res) => {
   try {
     const products = await prisma.product.findMany({
       orderBy: { createdAt: "desc" },
+      include: {
+        sales: {
+          select: {
+            units: true,
+            soldAt: true,
+          },
+        },
+      },
     });
-    res.json(products);
+
+    // Add sales summary to each product
+    const productsWithSales = products.map(product => {
+      const totalUnitsSold = product.sales.reduce((sum, sale) => sum + sale.units, 0);
+      const salesCount = product.sales.length;
+      const lastSaleDate = product.sales.length > 0 
+        ? new Date(Math.max(...product.sales.map(s => new Date(s.soldAt).getTime())))
+        : null;
+
+      return {
+        ...product,
+        sales: undefined, // Remove the detailed sales array
+        salesSummary: {
+          totalUnitsSold,
+          salesCount,
+          lastSaleDate: lastSaleDate?.toISOString() || null,
+        },
+      };
+    });
+
+    res.json(productsWithSales);
   } catch (err) {
     console.error("GET /products error", err);
     res.status(500).json({ error: "Failed to fetch products" });

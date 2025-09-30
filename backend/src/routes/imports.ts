@@ -113,16 +113,28 @@ router.post("/csv", uploadSingle, async (req: Request, res: Response) => {
     for (const r of rows) {
       const sku = String((r as any).sku ?? (r as any).SKU ?? "").trim();
       const name = String((r as any).name ?? (r as any).Name ?? "").trim();
-      const quantity = Number((r as any).quantity ?? (r as any).Quantity ?? "");
-      const threshold = Number((r as any).threshold ?? (r as any).Threshold ?? "");
+      const quantityRaw = (r as any).quantity ?? (r as any).Quantity ?? "";
+      const thresholdRaw = (r as any).threshold ?? (r as any).Threshold ?? "";
 
-      const ok =
-        sku.length > 0 &&
-        name.length > 0 &&
-        Number.isFinite(quantity) &&
-        Number.isFinite(threshold);
+      const quantity = Number(quantityRaw);
+      const threshold = Number(thresholdRaw);
 
-      if (!ok) {
+      let errorMsg = "";
+      if (!sku) {
+        errorMsg = "SKU is required";
+      } else if (!name) {
+        errorMsg = "Name is required";
+      } else if (!Number.isInteger(quantity)) {
+        errorMsg = "Quantity must be an integer";
+      } else if (quantity < 0) {
+        errorMsg = "Quantity cannot be negative";
+      } else if (!Number.isInteger(threshold)) {
+        errorMsg = "Threshold must be an integer";
+      } else if (threshold < 0) {
+        errorMsg = "Threshold cannot be negative";
+      }
+
+      if (errorMsg) {
         invalid++;
         continue;
       }
@@ -137,14 +149,28 @@ router.post("/csv", uploadSingle, async (req: Request, res: Response) => {
     const rowCreates = rows.map((raw: any) => {
       const sku = String(raw.sku ?? raw.SKU ?? "").trim();
       const name = String(raw.name ?? raw.Name ?? "").trim();
-      const quantity = Number(raw.quantity ?? raw.Quantity ?? "");
-      const threshold = Number(raw.threshold ?? raw.Threshold ?? "");
+      const quantityRaw = raw.quantity ?? raw.Quantity ?? "";
+      const thresholdRaw = raw.threshold ?? raw.Threshold ?? "";
 
-      const ok =
-        sku.length > 0 &&
-        name.length > 0 &&
-        Number.isFinite(quantity) &&
-        Number.isFinite(threshold);
+      const quantity = Number(quantityRaw);
+      const threshold = Number(thresholdRaw);
+
+      let errorMsg = "";
+      if (!sku) {
+        errorMsg = "SKU is required";
+      } else if (!name) {
+        errorMsg = "Name is required";
+      } else if (!Number.isInteger(quantity)) {
+        errorMsg = "Quantity must be an integer";
+      } else if (quantity < 0) {
+        errorMsg = "Quantity cannot be negative";
+      } else if (!Number.isInteger(threshold)) {
+        errorMsg = "Threshold must be an integer";
+      } else if (threshold < 0) {
+        errorMsg = "Threshold cannot be negative";
+      }
+
+      const ok = errorMsg === "";
 
       if (ok) validCount++; else invalidCount++;
 
@@ -157,7 +183,7 @@ router.post("/csv", uploadSingle, async (req: Request, res: Response) => {
           quantity: ok ? quantity : null,
           threshold: ok ? threshold : null,
           status: ok ? RowStatus.VALID : RowStatus.INVALID,
-          error: ok ? null : "Invalid row",
+          error: ok ? null : errorMsg,
         },
       });
     });
@@ -174,7 +200,7 @@ router.post("/csv", uploadSingle, async (req: Request, res: Response) => {
       },
     });
 
-    return res.json({ message: "Rows staged", jobId: job.id, total: rows.length });
+    return res.json({ message: "Rows staged", jobId: job.id, total: rows.length, valid: validCount, invalid: invalidCount });
   } catch (err) {
     console.error("CSV import error:", err);
     return res.status(500).json({ error: "Failed to import CSV" });
@@ -249,6 +275,97 @@ router.post("/normalize/:jobId", async (req: Request, res: Response) => {
   } catch (err) {
     console.error("Normalization error:", err);
     return res.status(500).json({ error: "Failed to normalize staged rows" });
+  }
+});
+
+// GET /api/imports/jobs → list recent import jobs
+router.get("/jobs", async (req: Request, res: Response) => {
+  try {
+    const jobs = await prisma.stagingImportJob.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 20,
+      select: {
+        id: true,
+        filename: true,
+        source: true,
+        status: true,
+        totalRows: true,
+        validRows: true,
+        invalidRows: true,
+        processedRows: true,
+        createdAt: true,
+        completedAt: true,
+      },
+    });
+    return res.json(jobs);
+  } catch (err) {
+    console.error("Error fetching import jobs:", err);
+    return res.status(500).json({ error: "Failed to fetch import jobs" });
+  }
+});
+
+// GET /api/imports/jobs/:jobId/errors → list invalid rows for a job
+router.get("/jobs/:jobId/errors", async (req: Request, res: Response) => {
+  const { jobId } = req.params;
+  try {
+    // Ensure job exists (optional but clearer error)
+    const job = await prisma.stagingImportJob.findUnique({ where: { id: jobId }, select: { id: true } });
+    if (!job) return res.status(404).json({ error: "Job not found" });
+
+    const rows = await prisma.stagingRow.findMany({
+      where: { jobId, status: RowStatus.INVALID },
+      orderBy: { createdAt: "asc" },
+      select: {
+        id: true,
+        sku: true,
+        name: true,
+        quantity: true,
+        threshold: true,
+        error: true,
+        rawText: true,
+        createdAt: true,
+      },
+    });
+
+    return res.json(rows);
+  } catch (err) {
+    console.error("Error fetching job errors:", err);
+    return res.status(500).json({ error: "Failed to fetch import errors" });
+  }
+});
+
+// DELETE /api/imports/jobs/:jobId → delete a specific import job and its rows
+router.delete("/jobs/:jobId", async (req: Request, res: Response) => {
+  const { jobId } = req.params;
+  try {
+    // Delete the job (cascade will delete associated rows)
+    await prisma.stagingImportJob.delete({
+      where: { id: jobId },
+    });
+    
+    return res.json({ message: "Import job deleted successfully" });
+  } catch (err: any) {
+    if (err?.code === "P2025") {
+      return res.status(404).json({ error: "Import job not found" });
+    }
+    console.error("Error deleting import job:", err);
+    return res.status(500).json({ error: "Failed to delete import job" });
+  }
+});
+
+// DELETE /api/imports/jobs → delete all import jobs and their rows
+router.delete("/jobs", async (req: Request, res: Response) => {
+  try {
+    // Delete all jobs (cascade will delete associated rows)
+    const result = await prisma.stagingImportJob.deleteMany({});
+    
+    return res.json({ 
+      message: "All import jobs deleted successfully",
+      deletedCount: result.count 
+    });
+  } catch (err) {
+    console.error("Error deleting all import jobs:", err);
+    return res.status(500).json({ error: "Failed to delete import jobs" });
   }
 });
 

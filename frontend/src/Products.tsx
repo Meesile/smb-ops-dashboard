@@ -10,6 +10,8 @@ import {
   Legend,
   Cell,
 } from "recharts";
+import ProductTrendModal from "./components/ProductTrendModal";
+import ConfirmModal from "./components/ConfirmModal";
 
 type Product = {
   id: string;
@@ -17,6 +19,11 @@ type Product = {
   sku: string;
   quantity: number;
   threshold: number;
+  salesSummary: {
+    totalUnitsSold: number;
+    salesCount: number;
+    lastSaleDate: string | null;
+  };
 };
 
 export default function Products() {
@@ -40,7 +47,24 @@ export default function Products() {
   const fileRef = useRef<HTMLInputElement | null>(null);
   const [uploading, setUploading] = useState<boolean>(false);
   const [uploadMsg, setUploadMsg] = useState<string>("");
+  const [uploadErrors, setUploadErrors] = useState<string[]>([]);
   const [normalizing, setNormalizing] = useState<boolean>(false);
+  
+  // Product trend modal
+  const [trendProductId, setTrendProductId] = useState<string | null>(null);
+
+  // Confirmation modal
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  }>({
+    isOpen: false,
+    title: "",
+    message: "",
+    onConfirm: () => {},
+  });
 
   const fetchProducts = async () => {
     try {
@@ -51,7 +75,14 @@ export default function Products() {
 
       // Build a stable hash of the essential fields sorted by SKU to avoid rerenders when nothing changed
       const normalized = (Array.isArray(data) ? data : [])
-        .map((p) => ({ sku: p.sku, name: p.name, quantity: p.quantity, threshold: p.threshold }))
+        .map((p) => ({ 
+          sku: p.sku, 
+          name: p.name, 
+          quantity: p.quantity, 
+          threshold: p.threshold,
+          totalUnitsSold: p.salesSummary?.totalUnitsSold || 0,
+          salesCount: p.salesSummary?.salesCount || 0
+        }))
         .sort((a, b) => a.sku.localeCompare(b.sku));
       const hash = JSON.stringify(normalized);
 
@@ -168,30 +199,38 @@ export default function Products() {
     }
   };
 
-  const deleteProduct = async (sku: string) => {
-    if (!confirm(`Delete product ${sku}? This cannot be undone.`)) return;
-    try {
-      setSaving(true);
-      setError("");
-      const res = await fetch(`http://localhost:4000/api/products/sku/${encodeURIComponent(sku)}`, {
-        method: "DELETE",
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        setError(data?.error || "Failed to delete product");
-      } else {
-        await fetchProducts();
-      }
-    } catch (e: any) {
-      setError(e?.message || "Failed to delete product");
-    } finally {
-      setSaving(false);
-    }
+  const deleteProduct = async (sku: string, productName: string) => {
+    setConfirmModal({
+      isOpen: true,
+      title: "Delete Product",
+      message: `Are you sure you want to delete ${productName} (${sku})? This action cannot be undone.`,
+      onConfirm: async () => {
+        setConfirmModal({ ...confirmModal, isOpen: false });
+        try {
+          setSaving(true);
+          setError("");
+          const res = await fetch(`http://localhost:4000/api/products/sku/${encodeURIComponent(sku)}`, {
+            method: "DELETE",
+          });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) {
+            setError(data?.error || "Failed to delete product");
+          } else {
+            await fetchProducts();
+          }
+        } catch (e: any) {
+          setError(e?.message || "Failed to delete product");
+        } finally {
+          setSaving(false);
+        }
+      },
+    });
   };
 
   const uploadCsv = async () => {
     const file = fileRef.current?.files?.[0];
     setUploadMsg("");
+    setUploadErrors([]);
     if (!file) {
       setUploadMsg("Please choose a .csv file first");
       return;
@@ -211,9 +250,12 @@ export default function Products() {
         body: fd,
       });
       const data = await res.json();
+      setUploadErrors([]);
       if (!res.ok) {
         setUploadMsg(`❌ ${data?.error || "Upload failed"}`);
         return;
+      } else if (data.invalid && Array.isArray(data.errors)) {
+        setUploadErrors(data.errors);
       }
   
       // 2) Normalize automatically if jobId is returned
@@ -228,6 +270,9 @@ export default function Products() {
         if (!res2.ok) {
           setUploadMsg(`❌ Normalize failed: ${norm?.error || "Unknown error"}`);
         } else {
+          if (norm.invalid && Array.isArray(norm.errors)) {
+            setUploadErrors(norm.errors);
+          }
           setUploadMsg(
             `✅ Import complete — created: ${norm.created}, updated: ${norm.updated}, snapshots: ${norm.snapshots}`
           );
@@ -329,6 +374,16 @@ export default function Products() {
           {uploadMsg}
         </div>
       )}
+      {uploadErrors.length > 0 && (
+        <div style={{ marginTop: 6, fontSize: 12, color: "crimson" }}>
+          <strong>Import errors:</strong>
+          <ul>
+            {uploadErrors.map((err, idx) => (
+              <li key={idx}>{err}</li>
+            ))}
+          </ul>
+        </div>
+      )}
       {loading ? (
         <p>Loading…</p>
       ) : error ? (
@@ -386,11 +441,20 @@ export default function Products() {
                 </div>
               ) : (
                 <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-                  <span>
-                    {p.name} ({p.sku}) — Qty: {p.quantity}, Threshold: {p.threshold}
-                  </span>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                    <span>
+                      {p.name} ({p.sku}) — Qty: {p.quantity}, Threshold: {p.threshold}
+                    </span>
+                    <div style={{ fontSize: 12, opacity: 0.7, display: "flex", gap: 12 }}>
+                      <span>Sold: {p.salesSummary.totalUnitsSold} units ({p.salesSummary.salesCount} sales)</span>
+                      {p.salesSummary.lastSaleDate && (
+                        <span>Last sale: {new Date(p.salesSummary.lastSaleDate).toLocaleDateString()}</span>
+                      )}
+                    </div>
+                  </div>
                   <button onClick={() => startEdit(p)}>Edit</button>
-                  <button onClick={() => deleteProduct(p.sku)} disabled={saving} style={{ color: "#b00020" }}>
+                  <button onClick={() => setTrendProductId(p.id)}>View Trend</button>
+                  <button onClick={() => deleteProduct(p.sku, p.name)} disabled={saving} style={{ color: "#b00020" }}>
                     Delete
                   </button>
                 </div>
@@ -399,6 +463,19 @@ export default function Products() {
           ))}
         </ul>
       )}
+      <ProductTrendModal 
+        productId={trendProductId} 
+        onClose={() => setTrendProductId(null)} 
+      />
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        onConfirm={confirmModal.onConfirm}
+        onCancel={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+        confirmText="Delete"
+        isDangerous={true}
+      />
     </div>
   );
 }
