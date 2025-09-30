@@ -2,7 +2,7 @@
 
 A modern, lightweight operations dashboard designed for small businesses to track inventory, analyze sales, and receive actionable alerts — all in one place.
 
-## 🚀 Features
+## Features
 
 ### Core Functionality
 - **Product Management** - Add, edit, delete, and track inventory levels with threshold alerts
@@ -26,7 +26,7 @@ A modern, lightweight operations dashboard designed for small businesses to trac
 - Inventory overview charts (low-stock vs top quantity)
 - Sales summary per product (total units, sale count, last sale date)
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 ### Frontend
 - **React 18** + **TypeScript** - Modern component-based UI
@@ -50,7 +50,7 @@ A modern, lightweight operations dashboard designed for small businesses to trac
 - **StagingImportJob** - Import job tracking and audit
 - **StagingRow** - Row-level import validation and error tracking
 
-## 📦 Getting Started
+## Getting Started
 
 ### Prerequisites
 - Node.js 18+ and npm
@@ -118,7 +118,7 @@ curl -X POST http://localhost:4000/api/products \
 # Or use the Add Product form in the UI
 ```
 
-## 📊 API Endpoints
+## API Endpoints
 
 ### Products
 - `GET /api/products` - List all products with sales summary
@@ -144,7 +144,7 @@ curl -X POST http://localhost:4000/api/products \
 - `DELETE /api/imports/jobs/:jobId` - Delete specific import job
 - `DELETE /api/imports/jobs` - Delete all import jobs
 
-## 🎨 UI Features
+## UI Features
 
 - **Dark Theme** - Modern, professional design with custom CSS variables
 - **Responsive Layout** - Two-column grid (main content + sidebar)
@@ -155,7 +155,7 @@ curl -X POST http://localhost:4000/api/products \
 - **Inline Editing** - Edit products directly in the list
 - **Status Badges** - Color-coded status indicators
 
-## 🔧 Architecture
+## Architecture
 
 ```
 smb-ops-dashboard/
@@ -179,35 +179,35 @@ smb-ops-dashboard/
 └── docs/               # Documentation
 ```
 
-## 🎯 Roadmap
+## Roadmap
 
 See [PROJECT_TRACKER.md](./PROJECT_TRACKER.md) for the complete roadmap.
 
 ### Completed (MVP v1)
-- ✅ Product CRUD with inline editing
-- ✅ CSV import with validation and staging
-- ✅ KPI cards and sales analytics
-- ✅ Low-stock alerts with cron scheduler
-- ✅ Product trend drill-downs
-- ✅ Import history audit trail
-- ✅ Modern dark theme UI
+- Product CRUD with inline editing
+- CSV import with validation and staging
+- KPI cards and sales analytics
+- Low-stock alerts with cron scheduler
+- Product trend drill-downs
+- Import history audit trail
+- Modern dark theme UI
 
 ### Next Up
-- [ ] Email delivery for alerts
-- [ ] Alert configuration UI
-- [ ] Date range filters for charts
-- [ ] Google Sheets connector
-- [ ] Multi-user authentication and RBAC
-- [ ] Docker deployment setup
+- Email delivery for alerts
+- Alert configuration UI
+- Date range filters for charts
+- Google Sheets connector
+- Multi-user authentication and RBAC
+- Docker deployment setup
 
 ### Future (Advanced)
-- [ ] Demand forecasting with AI/ML
-- [ ] Anomaly detection
-- [ ] MCP integration for AI-powered insights
-- [ ] Multi-tenant support
-- [ ] Real-time collaboration features
+- Demand forecasting with AI/ML
+- Anomaly detection
+- MCP integration for AI-powered insights
+- Multi-tenant support
+- Real-time collaboration features
 
-## 🧪 Testing
+## Testing
 
 ```bash
 # Test backend endpoints
@@ -219,7 +219,7 @@ curl http://localhost:4000/api/kpis/summary
 curl -X POST http://localhost:4000/api/alerts/run-job
 ```
 
-## 📝 CSV Import Format
+## CSV Import Format
 
 Upload CSV files with the following columns (case-insensitive):
 ```csv
@@ -231,19 +231,19 @@ ER-2LB,Espresso Roast,15,5
 Supported delimiters: comma, semicolon, tab, pipe
 Supported encodings: UTF-8, UTF-16LE, UTF-16BE
 
-## 🤝 Contributing
+## Contributing
 
 This is an MVP project for small business operations. Contributions welcome!
 
-## 📄 License
+## License
 
 MIT
 
-## 🔗 Links
+## Links
 
 - **GitHub**: [Meesile/smb-ops-dashboard](https://github.com/Meesile/smb-ops-dashboard)
 - **Project Tracker**: See [PROJECT_TRACKER.md](./PROJECT_TRACKER.md)
 
 ---
 
-**Built with ❤️ for small business owners who deserve better tools.**
+**Built with care for small business owners who deserve better tools.**
