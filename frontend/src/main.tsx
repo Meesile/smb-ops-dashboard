@@ -12,14 +12,22 @@ function App() {
   const refresh = () => setTick((t) => t + 1);
 
   return (
-    <div style={{ padding: 24, fontFamily: "system-ui" }}>
-      <h1>SMB Ops Dashboard</h1>
-      <KpiCards />
-      <SalesCharts />
-      <AddProductForm onCreated={refresh} />
-      <Products key={"p-" + Date.now()} />
-      <Alerts />
-      <ImportHistory />
+    <div className="app-container">
+      <header className="app-header">
+        <h1>SMB Ops Dashboard</h1>
+      </header>
+      <div className="app-content">
+        <div className="main-column">
+          <KpiCards />
+          <SalesCharts />
+          <Products key={"p-" + Date.now()} />
+        </div>
+        <div className="sidebar-column">
+          <AddProductForm onCreated={refresh} />
+          <Alerts />
+          <ImportHistory />
+        </div>
+      </div>
     </div>
   );
 }

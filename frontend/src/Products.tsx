@@ -293,20 +293,24 @@ export default function Products() {
   };
 
   return (
-    <div style={{ marginTop: 24 }}>
+    <div className="card compact scrollable">
       {/* Chart (only if we have enough relevant data) */}
       {shouldShowChart && (
         <div
-          style={{ height: 260, marginTop: 16, border: "1px solid #eee", borderRadius: 8, padding: 8 }}
+          className="chart-container"
+          style={{ height: 200, marginBottom: 12 }}
           onMouseEnter={() => setPausePolling(true)}
           onMouseLeave={() => setPausePolling(false)}
         >
+          <h3 style={{ margin: "0 0 8px 0", fontSize: 14, fontWeight: 600 }}>Inventory Overview</h3>
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={chartData} margin={{ top: 8, right: 16, left: 0, bottom: 8 }}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis allowDecimals={false} domain={[0, (dataMax: number) => Math.ceil(dataMax * 1.2)]} />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
+              <XAxis dataKey="name" stroke="var(--text-secondary)" style={{ fontSize: 12 }} />
+              <YAxis allowDecimals={false} domain={[0, (dataMax: number) => Math.ceil(dataMax * 1.2)]} stroke="var(--text-secondary)" style={{ fontSize: 12 }} />
               <Tooltip
+                contentStyle={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: 8, color: 'var(--text-primary)' }}
+                labelStyle={{ color: 'var(--text-primary)', fontWeight: 600 }}
                 formatter={(value: any, key: any, entry: any) => {
                   if (key === "quantity") return [value, "Qty"];
                   if (key === "threshold") return [value, "Threshold"];
@@ -320,12 +324,12 @@ export default function Products() {
                   return label;
                 }}
               />
-              <Legend />
-              <Bar dataKey="quantity" name="Qty" label={{ position: "top" }}>
+              <Legend wrapperStyle={{ color: 'var(--text-secondary)' }} />
+              <Bar dataKey="quantity" name="Qty" label={{ position: "top", fill: "var(--text-primary)", fontSize: 12 }}>
                 {chartData.map((entry: any, index: number) => (
                   <Cell
                     key={`cell-${index}`}
-                    fill={typeof entry.threshold === "number" && entry.quantity <= entry.threshold ? "#d9534f" : "#5cb85c"}
+                    fill={typeof entry.threshold === "number" && entry.quantity <= entry.threshold ? "var(--accent-red)" : "var(--accent-green)"}
                   />
                 ))}
               </Bar>
@@ -333,12 +337,13 @@ export default function Products() {
           </ResponsiveContainer>
         </div>
       )}
-      <div style={{ display: "flex", alignItems: "center", gap: 12, justifyContent: "space-between" }}>
-        <h2 style={{ margin: 0 }}>Products</h2>
+      <div className="card-header">
+        <h2 className="card-title">Products</h2>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <button
             onClick={() => setChartMode("low")}
             disabled={chartMode === "low"}
+            className={chartMode === "low" ? "" : "btn-secondary"}
             title="Show low-stock (Qty vs Threshold)"
           >
             Low-stock
@@ -346,11 +351,12 @@ export default function Products() {
           <button
             onClick={() => setChartMode("top")}
             disabled={chartMode === "top"}
+            className={chartMode === "top" ? "" : "btn-secondary"}
             title="Show top quantities"
           >
             Top qty
           </button>
-          <button onClick={fetchProducts} disabled={saving}>Refresh</button>
+          <button onClick={fetchProducts} disabled={saving} className="btn-secondary">Refresh</button>
 
           {/* Hidden file input — opened by Import button */}
           <input
@@ -452,9 +458,9 @@ export default function Products() {
                       )}
                     </div>
                   </div>
-                  <button onClick={() => startEdit(p)}>Edit</button>
-                  <button onClick={() => setTrendProductId(p.id)}>View Trend</button>
-                  <button onClick={() => deleteProduct(p.sku, p.name)} disabled={saving} style={{ color: "#b00020" }}>
+                  <button onClick={() => startEdit(p)} className="btn-secondary">Edit</button>
+                  <button onClick={() => setTrendProductId(p.id)} className="btn-secondary">View Trend</button>
+                  <button onClick={() => deleteProduct(p.sku, p.name)} disabled={saving} className="btn-danger">
                     Delete
                   </button>
                 </div>

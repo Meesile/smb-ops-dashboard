@@ -145,16 +145,17 @@ export default function ImportHistory() {
   };
 
   return (
-    <div style={{ marginTop: 24 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 12, justifyContent: "space-between" }}>
-        <h2 style={{ margin: 0 }}>Import History</h2>
+    <div className="card compact scrollable">
+      <div className="card-header" style={{ marginBottom: 8 }}>
+        <h2 className="card-title">Import History</h2>
         <div style={{ display: "flex", gap: 8 }}>
-          <button onClick={fetchJobs} disabled={refreshing}>{refreshing ? "Refreshing…" : "Refresh"}</button>
+          <button onClick={fetchJobs} disabled={refreshing} className="btn-secondary" style={{ fontSize: 12, padding: "0.375rem 0.75rem" }}>{refreshing ? "Refreshing…" : "Refresh"}</button>
           {jobs.length > 0 && (
             <button 
               onClick={deleteAllJobs} 
               disabled={deleting}
-              style={{ color: "#b00020" }}
+              className="btn-danger"
+              style={{ fontSize: 12, padding: "0.375rem 0.75rem" }}
             >
               {deleting ? "Deleting…" : "Delete All"}
             </button>
@@ -164,7 +165,7 @@ export default function ImportHistory() {
       {loading ? (
         <p>Loading…</p>
       ) : error ? (
-        <p style={{ color: "crimson" }}>❌ {error}</p>
+        <p className="alert-warning">❌ {error}</p>
       ) : jobs.length === 0 ? (
         <p>No import jobs yet</p>
       ) : (
@@ -201,11 +202,12 @@ export default function ImportHistory() {
                   <div style={{ fontSize: 12 }}>Finished: {j.completedAt ? new Date(j.completedAt).toLocaleString() : "—"}</div>
                 </div>
                 <div style={{ display: "flex", gap: 8, alignItems: "center", justifyContent: "flex-end" }}>
-                  <button onClick={() => toggleOpen(j.id)}>{openJobId === j.id ? "Hide" : "View"} errors</button>
+                  <button onClick={() => toggleOpen(j.id)} className="btn-secondary">{openJobId === j.id ? "Hide" : "View"} errors</button>
                   <button 
                     onClick={() => deleteJob(j.id)} 
                     disabled={deleting}
-                    style={{ color: "#b00020", fontSize: 12 }}
+                    className="btn-danger"
+                    style={{ fontSize: 12 }}
                   >
                     Delete
                   </button>

@@ -44,36 +44,44 @@ export default function AddProductForm({ onCreated }: Props) {
   };
 
   return (
-    <form onSubmit={submit} style={{ marginTop: 24, display: "grid", gap: 8, maxWidth: 420 }}>
-      <h2>Add Product</h2>
-      <input
-        placeholder="Name"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-        required
-      />
-      <input
-        placeholder="SKU"
-        value={sku}
-        onChange={(e) => setSku(e.target.value)}
-        required
-      />
-      <input
-        type="number"
-        placeholder="Quantity"
-        value={quantity}
-        onChange={(e) => setQuantity(e.target.value === "" ? "" : Number(e.target.value))}
-        min={0}
-      />
-      <input
-        type="number"
-        placeholder="Threshold"
-        value={threshold}
-        onChange={(e) => setThreshold(e.target.value === "" ? "" : Number(e.target.value))}
-        min={0}
-      />
-      <button type="submit">Create</button>
-      {msg && <div>{msg}</div>}
-    </form>
+    <div className="card compact">
+      <h2 className="card-title" style={{ marginBottom: 12 }}>Add Product</h2>
+      <form onSubmit={submit} style={{ display: "grid", gap: 10 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+          <input
+            type="text"
+            placeholder="Name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+          />
+          <input
+            type="text"
+            placeholder="SKU"
+            value={sku}
+            onChange={(e) => setSku(e.target.value)}
+            required
+          />
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+          <input
+            type="number"
+            placeholder="Quantity"
+            value={quantity}
+            onChange={(e) => setQuantity(e.target.value === "" ? "" : Number(e.target.value))}
+            min={0}
+          />
+          <input
+            type="number"
+            placeholder="Threshold"
+            value={threshold}
+            onChange={(e) => setThreshold(e.target.value === "" ? "" : Number(e.target.value))}
+            min={0}
+          />
+        </div>
+        <button type="submit" style={{ justifySelf: "start" }}>Create</button>
+        {msg && <div className={msg.startsWith("✅") ? "alert-success" : "alert-warning"} style={{ fontSize: 13, padding: "0.5rem" }}>{msg}</div>}
+      </form>
+    </div>
   );
 }

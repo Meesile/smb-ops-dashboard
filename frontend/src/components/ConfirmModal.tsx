@@ -39,39 +39,27 @@ export default function ConfirmModal({
     >
       <div
         style={{
-          background: "white",
-          borderRadius: 8,
+          background: "var(--bg-card)",
+          borderRadius: 12,
           padding: 24,
           maxWidth: 400,
-          boxShadow: "0 4px 20px rgba(0, 0, 0, 0.15)",
+          boxShadow: "0 8px 32px var(--shadow)",
+          border: "1px solid var(--border-color)",
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        <h3 style={{ margin: "0 0 12px 0" }}>{title}</h3>
-        <p style={{ margin: "0 0 20px 0", color: "#555" }}>{message}</p>
+        <h3 style={{ margin: "0 0 12px 0", color: "var(--text-primary)", fontSize: "1.25rem", fontWeight: 600 }}>{title}</h3>
+        <p style={{ margin: "0 0 20px 0", color: "var(--text-secondary)", lineHeight: 1.5 }}>{message}</p>
         <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
           <button
             onClick={onCancel}
-            style={{
-              padding: "8px 16px",
-              border: "1px solid #ddd",
-              borderRadius: 4,
-              background: "white",
-              cursor: "pointer",
-            }}
+            className="btn-secondary"
           >
             {cancelText}
           </button>
           <button
             onClick={onConfirm}
-            style={{
-              padding: "8px 16px",
-              border: "none",
-              borderRadius: 4,
-              background: isDangerous ? "#b00020" : "#007bff",
-              color: "white",
-              cursor: "pointer",
-            }}
+            className={isDangerous ? "btn-danger" : ""}
           >
             {confirmText}
           </button>

@@ -67,8 +67,8 @@ export default function SalesCharts() {
 
   if (loading) {
     return (
-      <div style={{ marginTop: 24 }}>
-        <h2>Sales Analytics</h2>
+      <div className="card">
+        <h2 className="card-title">Sales Analytics</h2>
         <p>Loading charts…</p>
       </div>
     );
@@ -76,21 +76,22 @@ export default function SalesCharts() {
 
   if (error) {
     return (
-      <div style={{ marginTop: 24 }}>
-        <h2>Sales Analytics</h2>
-        <p style={{ color: "crimson" }}>❌ {error}</p>
+      <div className="card alert-warning">
+        <h2 className="card-title">Sales Analytics</h2>
+        <p>❌ {error}</p>
       </div>
     );
   }
 
   return (
-    <div style={{ marginTop: 24 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 12, justifyContent: "space-between" }}>
-        <h2 style={{ margin: 0 }}>Sales Analytics</h2>
+    <div className="card compact">
+      <div className="card-header" style={{ marginBottom: 8 }}>
+        <h2 className="card-title">Sales Analytics</h2>
         <div style={{ display: "flex", gap: 8 }}>
           <button
             onClick={() => setChartMode("timeseries")}
             disabled={chartMode === "timeseries"}
+            className={chartMode === "timeseries" ? "" : "btn-secondary"}
             title="Daily sales over time"
           >
             Time Series
@@ -98,17 +99,18 @@ export default function SalesCharts() {
           <button
             onClick={() => setChartMode("trends")}
             disabled={chartMode === "trends"}
+            className={chartMode === "trends" ? "" : "btn-secondary"}
             title="Top products by sales"
           >
             Product Trends
           </button>
-          <button onClick={fetchSalesData}>Refresh</button>
+          <button onClick={fetchSalesData} className="btn-secondary">Refresh</button>
         </div>
       </div>
 
       {chartMode === "timeseries" ? (
-        <div style={{ height: 300, marginTop: 16, border: "1px solid #eee", borderRadius: 8, padding: 8 }}>
-          <h3 style={{ margin: "0 0 8px 0", fontSize: 16 }}>Daily Sales (30 days)</h3>
+        <div className="chart-container" style={{ height: 220 }}>
+          <h3 style={{ margin: "0 0 8px 0", fontSize: 14, fontWeight: 600 }}>Daily Sales (30 days)</h3>
           {salesData.length === 0 ? (
             <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%" }}>
               <p style={{ opacity: 0.6 }}>No sales data available</p>
@@ -154,8 +156,8 @@ export default function SalesCharts() {
           )}
         </div>
       ) : (
-        <div style={{ height: 300, marginTop: 16, border: "1px solid #eee", borderRadius: 8, padding: 8 }}>
-          <h3 style={{ margin: "0 0 8px 0", fontSize: 16 }}>Top Products by Sales (30 days)</h3>
+        <div className="chart-container" style={{ height: 220 }}>
+          <h3 style={{ margin: "0 0 8px 0", fontSize: 14, fontWeight: 600 }}>Top Products by Sales (30 days)</h3>
           {productTrends.length === 0 ? (
             <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%" }}>
               <p style={{ opacity: 0.6 }}>No product sales data available</p>

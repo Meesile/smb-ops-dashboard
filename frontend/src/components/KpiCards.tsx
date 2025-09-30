@@ -13,10 +13,10 @@ type KpiSummary = {
 
 function KpiCard({ label, value, hint }: { label: string; value: string | number; hint?: string }) {
   return (
-    <div style={{ padding: 12, border: "1px solid #eee", borderRadius: 8, minWidth: 160 }}>
-      <div style={{ fontSize: 12, opacity: 0.7 }}>{label}</div>
-      <div style={{ fontSize: 22, fontWeight: 700 }}>{value}</div>
-      {hint && <div style={{ fontSize: 12, opacity: 0.6 }}>{hint}</div>}
+    <div className="kpi-card">
+      <div className="kpi-label">{label}</div>
+      <div className="kpi-value">{value}</div>
+      {hint && <div className="kpi-hint">{hint}</div>}
     </div>
   );
 }
@@ -44,21 +44,17 @@ export default function KpiCards() {
     fetchKpis();
   }, []);
 
-  if (loading) return <div style={{ marginTop: 16 }}>Loading KPIs…</div>;
-  if (error) return <div style={{ marginTop: 16, color: "crimson" }}>❌ {error}</div>;
+  if (loading) return <div className="card">Loading KPIs…</div>;
+  if (error) return <div className="card alert-warning">❌ {error}</div>;
   if (!kpis) return null;
 
   return (
-    <div style={{ marginTop: 16 }}>
-      <h2 style={{ marginTop: 0 }}>KPIs</h2>
-      <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-        <KpiCard label="Units Sold (Total)" value={kpis.unitsSoldTotal} />
-        <KpiCard label="Units Sold (24h)" value={kpis.unitsSold24h} />
-        <KpiCard label="Units Sold (7d)" value={kpis.unitsSold7d} />
-        <KpiCard label="Low-stock Products" value={kpis.lowStockProducts} />
-        <KpiCard label="Stock-outs" value={kpis.stockOutProducts} />
-        <KpiCard label="Revenue" value={kpis.revenueTotal == null ? "—" : `$${kpis.revenueTotal.toLocaleString()}`} hint="Add price data to enable" />
-        <KpiCard label="Margin" value={kpis.marginPct == null ? "—" : `${kpis.marginPct.toFixed(1)}%`} hint="Add cost data to enable" />
+    <div className="card compact">
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "1rem" }}>
+        <KpiCard label="Units (Total)" value={kpis.unitsSoldTotal} />
+        <KpiCard label="Units (24h)" value={kpis.unitsSold24h} />
+        <KpiCard label="Units (7d)" value={kpis.unitsSold7d} />
+        <KpiCard label="Low-stock" value={kpis.lowStockProducts} />
       </div>
     </div>
   );

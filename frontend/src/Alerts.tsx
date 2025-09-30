@@ -46,29 +46,29 @@ export default function Alerts() {
 
   if (loading) {
     return (
-      <div style={{ marginTop: 24 }}>
-        <h2>Alerts</h2>
+      <div className="card">
+        <h2 className="card-title">Alerts</h2>
         <p>Loading…</p>
       </div>
     );
   }
 
   return (
-    <div style={{ marginTop: 24 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-        <h2 style={{ margin: 0 }}>Alerts</h2>
-        <button onClick={fetchAlerts}>Refresh</button>
+    <div className="card compact">
+      <div className="card-header" style={{ marginBottom: 8 }}>
+        <h2 className="card-title">Alerts</h2>
+        <button onClick={fetchAlerts} className="btn-secondary" style={{ fontSize: 12, padding: "0.375rem 0.75rem" }}>Refresh</button>
       </div>
-      {error && <p style={{ color: "crimson" }}>❌ {error}</p>}
+      {error && <p className="alert-warning">❌ {error}</p>}
       {lowStock.length === 0 ? (
-        <p>✅ No low-stock alerts</p>
+        <p className="alert-success">✅ No low-stock alerts</p>
       ) : (
         <>
-          <h3 style={{ marginTop: 12 }}>⚠️ Low Stock</h3>
-          <ul>
+          <h3 style={{ marginTop: 0, marginBottom: 12, fontSize: 16, fontWeight: 600, color: "var(--accent-orange)" }}>⚠️ Low Stock</h3>
+          <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
             {lowStock.map((p) => (
-              <li key={p.id}>
-                {p.name} ({p.sku}) — Qty: {p.quantity}, Threshold: {p.threshold}
+              <li key={p.id} style={{ padding: "0.75rem", borderBottom: "1px solid var(--border-color)" }}>
+                <strong>{p.name}</strong> ({p.sku}) — Qty: {p.quantity}, Threshold: {p.threshold}
               </li>
             ))}
           </ul>
