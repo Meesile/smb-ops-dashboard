@@ -18,6 +18,7 @@ model Product {
 
   inventoryLevels InventoryLevel[]
   sales           Sale[]
+  alerts          Alert[]
 }
 
 /// ---------- STAGING & CORE NORMALIZATION TABLES ----------
@@ -101,4 +102,31 @@ model Sale {
   units     Int
 
   @@index([productId, soldAt])
+}
+
+// ---------- Alerts ----------
+
+enum AlertStatus {
+  ACTIVE
+  ACKNOWLEDGED
+  RESOLVED
+}
+
+enum AlertType {
+  LOW_STOCK
+}
+
+model Alert {
+  id            String      @id @default(cuid())
+  productId     String
+  product       Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  type          AlertType
+  message       String
+  status        AlertStatus @default(ACTIVE)
+  createdAt     DateTime    @default(now())
+  acknowledgedAt DateTime?
+  resolvedAt    DateTime?
+
+  @@index([productId, status])
+  @@index([status, createdAt])
 }

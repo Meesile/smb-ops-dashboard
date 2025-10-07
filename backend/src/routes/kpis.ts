@@ -190,4 +190,60 @@ router.get("/product-sales/:productId", async (req, res) => {
   }
 });
 
+// GET /api/kpis/weekday-weekend → compare weekday vs weekend sales
+router.get("/weekday-weekend", async (req, res) => {
+  try {
+    const days = parseInt(req.query.days as string) || 30;
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - days);
+
+    const sales = await prisma.sale.findMany({
+      where: { soldAt: { gte: startDate } },
+      select: { soldAt: true, units: true },
+      orderBy: { soldAt: "asc" },
+    });
+
+    let weekdayUnits = 0;
+    let weekendUnits = 0;
+    let weekdaySalesCount = 0;
+    let weekendSalesCount = 0;
+
+    for (const sale of sales) {
+      const day = sale.soldAt.getDay(); // 0=Sun ... 6=Sat
+      const isWeekend = day === 0 || day === 6;
+      if (isWeekend) {
+        weekendUnits += sale.units;
+        weekendSalesCount += 1;
+      } else {
+        weekdayUnits += sale.units;
+        weekdaySalesCount += 1;
+      }
+    }
+
+    const data = [
+      {
+        label: "Weekday",
+        units: weekdayUnits,
+        salesCount: weekdaySalesCount,
+        avgUnits: weekdaySalesCount > 0 ? Number((weekdayUnits / weekdaySalesCount).toFixed(2)) : 0,
+      },
+      {
+        label: "Weekend",
+        units: weekendUnits,
+        salesCount: weekendSalesCount,
+        avgUnits: weekendSalesCount > 0 ? Number((weekendUnits / weekendSalesCount).toFixed(2)) : 0,
+      },
+    ];
+
+    return res.json({
+      rangeDays: days,
+      asOf: new Date().toISOString(),
+      data,
+    });
+  } catch (err) {
+    console.error("GET /api/kpis/weekday-weekend error", err);
+    return res.status(500).json({ error: "Failed to compute weekday/weekend KPI" });
+  }
+});
+
 export default router;

@@ -39,9 +39,9 @@ Use this as the living project dashboard. Check items off as you complete them. 
 - [x] KPI cards: stock-outs
 - [ ] KPI cards: margin
 - [x] Charts: time series sales, top products
-- [ ] Charts: weekday vs weekend
+- [x] Charts: weekday vs weekend (2025-10-07)
 - [x] Drill-downs: product → daily trend
-- [ ] Date range + filters
+- [x] Date range + filters (days selector on Sales charts) (2025-10-07)
 - [x] KPI cards: inventory (total products, low-stock, total quantity)
 - [x] Chart: top products (by quantity)
 
@@ -50,7 +50,7 @@ Use this as the living project dashboard. Check items off as you complete them. 
 - [x] Scheduling: nightly cron job
 - [ ] Delivery: email (P0), SMS (P1)
 - [ ] Alert config UI
-- [ ] Alert history/status
+- [x] Alert history/status (model + API + UI) (2025-10-07)
 
 ### Phase 5 — Collaboration & Workflow
 - [ ] Multi-user invites
