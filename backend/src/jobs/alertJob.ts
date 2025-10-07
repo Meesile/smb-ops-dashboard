@@ -1,4 +1,5 @@
 import { prisma } from "../lib/prisma";
+import { AlertStatus, AlertType } from "@prisma/client";
 
 export interface AlertJobResult {
   success: boolean;
@@ -18,29 +19,55 @@ export async function runAlertJob(): Promise<AlertJobResult> {
   try {
     console.log("Starting nightly alert job...");
 
-    // Get all products with low stock
+    // Get all products
     const products = await prisma.product.findMany();
-    const lowStockProducts = products.filter(p => p.quantity <= p.threshold && p.threshold > 0);
+    const lowStockProducts = products.filter(
+      (p) => p.threshold > 0 && p.quantity <= p.threshold
+    );
 
     console.log(`Found ${lowStockProducts.length} products with low stock`);
 
-    // For now, just log the alerts (in the future, this would send emails/SMS)
+    // Create ACTIVE alerts for any products that don't already have an active low-stock alert
     for (const product of lowStockProducts) {
-      console.log(`ALERT: ${product.name} (${product.sku}) - Qty: ${product.quantity}, Threshold: ${product.threshold}`);
-      
-      // TODO: In the future, create Alert records in the database
-      // await prisma.alert.create({
-      //   data: {
-      //     productId: product.id,
-      //     type: 'LOW_STOCK',
-      //     message: `${product.name} is below threshold (${product.quantity}/${product.threshold})`,
-      //     status: 'ACTIVE',
-      //   }
-      // });
+      const existingActive = await prisma.alert.findFirst({
+        where: { productId: product.id, type: AlertType.LOW_STOCK, status: AlertStatus.ACTIVE },
+        select: { id: true },
+      });
+      if (!existingActive) {
+        await prisma.alert.create({
+          data: {
+            productId: product.id,
+            type: AlertType.LOW_STOCK,
+            message: `${product.name} is below threshold (${product.quantity}/${product.threshold})`,
+            status: AlertStatus.ACTIVE,
+          },
+        });
+        result.alertsGenerated += 1;
+        console.log(
+          `ALERT CREATED: ${product.name} (${product.sku}) - Qty: ${product.quantity}, Threshold: ${product.threshold}`
+        );
+      }
     }
 
-    result.alertsGenerated = lowStockProducts.length;
-    console.log(`Alert job completed. Generated ${result.alertsGenerated} alerts.`);
+    // Resolve active alerts for products that have recovered above threshold
+    const activeAlerts = await prisma.alert.findMany({
+      where: { status: AlertStatus.ACTIVE, type: AlertType.LOW_STOCK },
+      include: { product: true },
+    });
+    for (const alert of activeAlerts) {
+      const p = alert.product;
+      if (p.threshold > 0 && p.quantity > p.threshold) {
+        await prisma.alert.update({
+          where: { id: alert.id },
+          data: { status: AlertStatus.RESOLVED, resolvedAt: new Date() },
+        });
+        console.log(
+          `ALERT RESOLVED: ${p.name} (${p.sku}) - Qty: ${p.quantity}, Threshold: ${p.threshold}`
+        );
+      }
+    }
+
+    console.log(`Alert job completed. New alerts generated: ${result.alertsGenerated}.`);
 
   } catch (error) {
     console.error("Alert job failed:", error);

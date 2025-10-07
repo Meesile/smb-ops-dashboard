@@ -28,32 +28,39 @@ type ProductTrend = {
   salesCount: number;
 };
 
+type WeekdayWeekendDatum = { label: "Weekday" | "Weekend"; units: number; salesCount: number; avgUnits: number };
+
 export default function SalesCharts() {
   const [salesData, setSalesData] = useState<SalesDataPoint[]>([]);
   const [productTrends, setProductTrends] = useState<ProductTrend[]>([]);
+  const [weekdayWeekend, setWeekdayWeekend] = useState<WeekdayWeekendDatum[] | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>("");
-  const [chartMode, setChartMode] = useState<"timeseries" | "trends">("timeseries");
+  const [chartMode, setChartMode] = useState<"timeseries" | "trends" | "weekdayWeekend">("timeseries");
+  const [days, setDays] = useState<number>(30);
 
   const fetchSalesData = async () => {
     try {
       setError("");
-      const [salesRes, trendsRes] = await Promise.all([
-        fetch("http://localhost:4000/api/kpis/sales-timeseries?days=30"),
-        fetch("http://localhost:4000/api/kpis/product-trends?days=30&limit=10"),
+      const [salesRes, trendsRes, wwRes] = await Promise.all([
+        fetch(`http://localhost:4000/api/kpis/sales-timeseries?days=${days}`),
+        fetch(`http://localhost:4000/api/kpis/product-trends?days=${days}&limit=10`),
+        fetch(`http://localhost:4000/api/kpis/weekday-weekend?days=${days}`),
       ]);
 
-      if (!salesRes.ok || !trendsRes.ok) {
+      if (!salesRes.ok || !trendsRes.ok || !wwRes.ok) {
         throw new Error("Failed to load sales data");
       }
 
-      const [salesData, trendsData] = await Promise.all([
+      const [salesData, trendsData, wwData] = await Promise.all([
         salesRes.json() as Promise<SalesDataPoint[]>,
         trendsRes.json() as Promise<ProductTrend[]>,
+        wwRes.json() as Promise<{ data: WeekdayWeekendDatum[] }>,
       ]);
 
       setSalesData(Array.isArray(salesData) ? salesData : []);
       setProductTrends(Array.isArray(trendsData) ? trendsData : []);
+      setWeekdayWeekend(Array.isArray(wwData?.data) ? wwData.data : []);
     } catch (e: any) {
       setError(e?.message || "Failed to load sales data");
     } finally {
@@ -63,7 +70,8 @@ export default function SalesCharts() {
 
   useEffect(() => {
     fetchSalesData();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [days]);
 
   if (loading) {
     return (
@@ -87,7 +95,7 @@ export default function SalesCharts() {
     <div className="card compact">
       <div className="card-header" style={{ marginBottom: 8 }}>
         <h2 className="card-title">Sales Analytics</h2>
-        <div style={{ display: "flex", gap: 8 }}>
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
           <button
             onClick={() => setChartMode("timeseries")}
             disabled={chartMode === "timeseries"}
@@ -104,13 +112,31 @@ export default function SalesCharts() {
           >
             Product Trends
           </button>
+          <button
+            onClick={() => setChartMode("weekdayWeekend")}
+            disabled={chartMode === "weekdayWeekend"}
+            className={chartMode === "weekdayWeekend" ? "" : "btn-secondary"}
+            title="Compare weekday vs weekend"
+          >
+            Weekday vs Weekend
+          </button>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, marginLeft: 8 }}>
+            <label style={{ fontSize: 12, opacity: 0.8 }}>Days:</label>
+            <select value={days} onChange={(e) => setDays(Number(e.target.value))}>
+              <option value={7}>7</option>
+              <option value={14}>14</option>
+              <option value={30}>30</option>
+              <option value={60}>60</option>
+              <option value={90}>90</option>
+            </select>
+          </div>
           <button onClick={fetchSalesData} className="btn-secondary">Refresh</button>
         </div>
       </div>
 
       {chartMode === "timeseries" ? (
         <div className="chart-container" style={{ height: 220 }}>
-          <h3 style={{ margin: "0 0 8px 0", fontSize: 14, fontWeight: 600 }}>Daily Sales (30 days)</h3>
+          <h3 style={{ margin: "0 0 8px 0", fontSize: 14, fontWeight: 600 }}>Daily Sales ({days} days)</h3>
           {salesData.length === 0 ? (
             <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%" }}>
               <p style={{ opacity: 0.6 }}>No sales data available</p>
@@ -155,9 +181,9 @@ export default function SalesCharts() {
             </ResponsiveContainer>
           )}
         </div>
-      ) : (
+      ) : chartMode === "trends" ? (
         <div className="chart-container" style={{ height: 220 }}>
-          <h3 style={{ margin: "0 0 8px 0", fontSize: 14, fontWeight: 600 }}>Top Products by Sales (30 days)</h3>
+          <h3 style={{ margin: "0 0 8px 0", fontSize: 14, fontWeight: 600 }}>Top Products by Sales ({days} days)</h3>
           {productTrends.length === 0 ? (
             <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%" }}>
               <p style={{ opacity: 0.6 }}>No product sales data available</p>
@@ -187,6 +213,34 @@ export default function SalesCharts() {
                 />
                 <Legend />
                 <Bar dataKey="unitsSold" fill="#8884d8" name="Units Sold" />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
+        </div>
+      ) : (
+        <div className="chart-container" style={{ height: 220 }}>
+          <h3 style={{ margin: "0 0 8px 0", fontSize: 14, fontWeight: 600 }}>Weekday vs Weekend ({days} days)</h3>
+          {!weekdayWeekend || weekdayWeekend.length === 0 ? (
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%" }}>
+              <p style={{ opacity: 0.6 }}>No sales data available</p>
+            </div>
+          ) : (
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={weekdayWeekend} margin={{ top: 8, right: 16, left: 0, bottom: 8 }}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="label" />
+                <YAxis allowDecimals={false} />
+                <Tooltip
+                  formatter={(value: any, key: any) => {
+                    if (key === "units") return [value, "Units Sold"];
+                    if (key === "salesCount") return [value, "Sales Count"];
+                    if (key === "avgUnits") return [value, "Avg Units/Sale"];
+                    return [value, key];
+                  }}
+                />
+                <Legend />
+                <Bar dataKey="units" fill="#8884d8" name="Units Sold" />
+                <Bar dataKey="salesCount" fill="#82ca9d" name="Sales Count" />
               </BarChart>
             </ResponsiveContainer>
           )}
